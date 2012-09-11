@@ -13,7 +13,7 @@ def max_increase(prices):
 				incval=sellprice-buyprice
 	return inc
 
-def main():
+def main(min_profit_ratio=1000):
 	for prefix in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
 		reader = csv.DictReader(open('data/NASDAQ/NASDAQ_daily_prices_%s.csv' % prefix))
 		prices = collections.defaultdict(list)
@@ -23,10 +23,11 @@ def main():
 		print 'Symbol\tBuy Date\tBuy Price\tSell Date\tSell Price\tGain'
 		for symbol in sorted(prices.keys()):
 			prices[symbol] = sorted(prices[symbol], key=lambda a:a['date'])
-			increase = max_increase(prices[symbol])
-			gain = float(increase[0]['stock_price_high'])/float(increase[1]['stock_price_low'])
-			if gain > 10:
-				print '%s\t%s\t%s\t\t%s\t%s\t\t%dx' % (symbol, increase[1]['date'], increase[1]['stock_price_low'], increase[0]['date'], increase[0]['stock_price_high'], gain)
+			if max(float(a['stock_price_high']) for a in prices[symbol]) > min(float(a['stock_price_low']) for a in prices[symbol]) * min_profit_ratio:			
+				increase = max_increase(prices[symbol])
+				gain = float(increase[0]['stock_price_high'])/float(increase[1]['stock_price_low'])
+				if gain > min_profit_ratio:
+					print '%s\t%s\t%s\t\t%s\t%s\t\t%dx' % (symbol, increase[1]['date'], increase[1]['stock_price_low'], increase[0]['date'], increase[0]['stock_price_high'], gain)
 
 if __name__ == '__main__':
 	main()
